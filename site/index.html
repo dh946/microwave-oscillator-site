@@ -34,7 +34,7 @@
       <p class="rule"><b>统一口径：</b> L<sub>10 GHz</sub> = L<sub>原始</sub> - 20 log<sub>10</sub>(f<sub>载频</sub> / 10 GHz)。只排名已核对的实测数据；载频不明确的数据不会自动换算。</p>
     </section>
     <section class="comparison" aria-labelledby="comparison-title">
-      <div class="comparison-head"><div><h2 id="comparison-title">多文献相噪对比</h2><p>选择最多 4 篇论文；曲线使用各论文在每个频偏下最优的可比输出。缺测点不补值。</p></div><div class="compare-add"><input id="compare-input" list="compare-options" placeholder="搜索并添加论文" aria-label="搜索要比较的论文"><datalist id="compare-options"></datalist><button id="compare-add" type="button">＋ 添加对比</button></div></div>
+      <div class="comparison-head"><div><h2 id="comparison-title">多文献相噪对比</h2><p>默认预选当前频偏排名前两篇；可搜索替换或追加，最多 4 篇。曲线使用各论文在每个频偏下最优的可比输出，缺测点不补值。</p></div><div class="compare-add"><input id="compare-input" list="compare-options" placeholder="搜索并添加论文" aria-label="搜索要比较的论文"><datalist id="compare-options"></datalist><button id="compare-add" type="button">＋ 添加对比</button></div></div>
       <div id="compare-selected" class="compare-selected" aria-live="polite"></div><div id="comparison-chart" class="chart-empty">请添加 2–4 篇论文以绘制相噪点线图。</div><div id="comparison-legend" class="chart-legend"></div>
     </section>
     <div class="summary"><h2 id="ranking-title">10 kHz · 归一化至 10 GHz</h2><p id="result-count">—</p></div>
@@ -82,7 +82,7 @@
     async function load(){
       try{const r=await fetch('/api/data',{cache:'no-store'});if(!r.ok)throw new Error();state.data=await r.json();state.writable=true;$('add-pdf').hidden=false;$('mode-notice').className='notice ok';$('mode-notice').textContent='可编辑模式：补充的数据、技术分类和标签会直接保存到本地文献库。';$('mode-notice').hidden=false;}
       catch{state.data=window.PAPER_DATA;state.writable=false;$('mode-notice').className='notice';$('mode-notice').textContent='静态只读版本：访客无法上传 PDF 或修改数据。维护者在本地更新文献库后重新发布，即可更新此页面。';$('mode-notice').hidden=false;}
-      if(!state.data?.papers){$('library-status').textContent='数据读取失败';return;}buildControls();render();
+      if(!state.data?.papers){$('library-status').textContent='数据读取失败';return;}if(!state.compareIds.length)state.compareIds=state.data.papers.map(p=>({paper:p,rows:rowsFor(p,state.offsetHz)})).filter(x=>x.rows.length).sort((a,b)=>a.rows.sort((m,n)=>m.value-n.value)[0].value-b.rows.sort((m,n)=>m.value-n.value)[0].value).slice(0,2).map(x=>x.paper.id);buildControls();render();
     }
     function buildControls(){
       $('offsets').innerHTML=OFFSETS.map(o=>`<button class="choice ${o===state.offsetHz?'active':''}" data-offset="${o}">${fmtOffset(o)}</button>`).join('');
